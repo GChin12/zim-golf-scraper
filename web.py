@@ -143,16 +143,42 @@ CAT_EMOJI = {"clubs": "⛳", "bags": "🎒", "balls": "🏌️", "attire": "👕
 
 HOOKS = {
     "clubs": [
-        "Upgrade your game without breaking the bank!",
-        "This set won't last long — grab it before it's gone!",
-        "Perfect for the serious golfer on a budget.",
-        "Hit further, play better — at a fraction of retail price.",
+        "Your excuses just ran out of excuses.",
+        "Warning: may cause sudden overconfidence on the 1st tee.",
+        "Your caddy has been waiting for this moment.",
+        "Hit further. Miss less. Blame the course instead.",
+        "Bring this to Harare — let the WhatsApp groups do the rest.",
     ],
-    "bags":   ["Carry your kit in style!", "The perfect companion for your round.", "Great bag at an unbeatable price."],
-    "balls":  ["Stock up and save big!", "Premium balls at a fraction of shop price.", "Never run short on the course again!"],
-    "attire": ["Look the part without paying full price!", "Premium golf fashion — serious discount.", "Dress sharp on the fairway!"],
-    "shoes":  ["Comfort and grip at the right price.", "Walk every hole in style!", "Premium footwear — massive saving."],
-    "other":  ["Great golf find — don't miss out!", "Snag this deal before someone else does!"],
+    "bags": [
+        "Carry your clubs, your lunch, and your dignity — all in one.",
+        "Because dragging clubs in a shopping bag is not the vibe.",
+        "Your playing partners will notice. That's entirely the point.",
+        "Golf is hard. At least your bag can be sorted.",
+    ],
+    "balls": [
+        "Stock up. You will lose them. Own it.",
+        "Buy 12. Somehow find 0 after Sunday. Still worth it.",
+        "Pro tip: they go further if you hit the middle part.",
+        "Cheaper than the water hazard's collection fee.",
+    ],
+    "attire": [
+        "Look like a pro. Play like yourself. At least one works.",
+        "Dress sharp on the fairway. Your scorecard can stay private.",
+        "A polo so fresh it'll distract your opponents. That's legal.",
+        "Style game: sorted. Short game: your problem.",
+    ],
+    "shoes": [
+        "Walk every hole like you know exactly what you're doing.",
+        "Good shoes won't fix your swing. They'll make it look intentional.",
+        "Grip on the course. Style in the clubhouse. Zero excuses left.",
+        "Your feet have suffered long enough. Treat them.",
+    ],
+    "other": [
+        "Snag this before your playing partner does.",
+        "Good deals don't wait. Neither should you.",
+        "Some things in golf are a gamble. This isn't one of them.",
+        "The course won't know what hit it.",
+    ],
 }
 
 
@@ -249,7 +275,13 @@ def generate_wa_message(listing: Listing, sell_usd: float | None = None, year: s
     if info:
         lines += ["  ·  ".join(info), ""]
 
-    lines += [hook, "", "_Kanda Sports Deals · Up your game._", "#KandaSports #ZimGolf"]
+    lines += [
+        hook, "",
+        "\U0001f4ac Interested? Message us: wa.me/27786093328",
+        "",
+        "_Kanda Sports Deals · Up your game._",
+        "#KandaSports #ZimGolf",
+    ]
     return "\n".join(lines)
 
 
@@ -464,9 +496,9 @@ def posted():
 
 @app.route("/api/card/<int:listing_id>")
 def deal_card(listing_id):
-    year         = request.args.get("year", "")
+    year          = request.args.get("year", "")
     sell_override = request.args.get("sell_usd", None, type=float)
-    db: Session  = SessionFactory()
+    db: Session   = SessionFactory()
     try:
         listing = db.get(Listing, listing_id)
         if not listing:
@@ -476,6 +508,7 @@ def deal_card(listing_id):
         sell    = sell_override if sell_override is not None else (pricing["sell_usd"] if pricing else None)
         cat     = listing.category or "other"
         hook    = random.choice(HOOKS.get(cat, HOOKS["other"]))
+        imgs    = extract_listing_images(listing.url, listing.image_url)
         png     = generate_card(
             title       = listing.title,
             brand       = listing.brand,
@@ -484,12 +517,25 @@ def deal_card(listing_id):
             year        = year,
             description = listing.description,
             hook        = hook,
-            image_url   = listing.image_url,
+            image_urls  = imgs,
         )
         safe = re.sub(r'[^\w-]', '_', (listing.title or 'deal')[:30]).strip('_')
         from flask import Response
         return Response(png, mimetype='image/png',
                         headers={"Content-Disposition": f'attachment; filename="{safe}.png"'})
+    finally:
+        db.close()
+
+
+@app.route("/api/image-urls/<int:listing_id>")
+def image_urls(listing_id):
+    db: Session = SessionFactory()
+    try:
+        listing = db.get(Listing, listing_id)
+        if not listing:
+            return jsonify({"urls": [], "count": 0}), 404
+        urls = extract_listing_images(listing.url, listing.image_url)
+        return jsonify({"urls": urls, "count": len(urls)})
     finally:
         db.close()
 

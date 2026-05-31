@@ -422,6 +422,21 @@ async function openWA(id) {
         <div class="wa-card-meta">${metaParts.join(' · ')}</div>
       </div>
     </div>
+
+    <!-- Image gallery (loads async) -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#5DCAA5">
+          &#128248; Photos <span id="img-count" style="font-weight:400;color:#aaa;font-size:0.73rem"></span>
+        </span>
+        <button class="btn-dl-all" id="btn-dl-all" onclick="downloadAllImages(${id})">&#8595; Save all (ZIP)</button>
+      </div>
+      <div id="img-gallery"
+           style="display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;min-height:76px;align-items:center;scrollbar-width:thin">
+        <span style="color:#aaa;font-size:0.8rem">Loading photos&hellip;</span>
+      </div>
+    </div>
+
     <div class="year-row">
       <span>&#128197; Year:</span>
       <span id="year-spinner" style="color:#aaa;font-size:0.8rem">searching&hellip;</span>
@@ -432,13 +447,12 @@ async function openWA(id) {
     <p style="font-size:0.8rem;color:#888;margin-bottom:6px">WhatsApp message:</p>
     <div class="wa-msg-box">${escapeHtml(data.wa_message)}</div>
     <div style="display:flex;gap:8px;margin-bottom:6px">
-      <button class="btn-copy" id="btn-copy" onclick="copyMessage()">&#128203; Copy</button>
+      <button class="btn-copy" id="btn-copy" onclick="copyMessage()">&#128203; Copy message</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:6px">
       <button class="btn-share-wa" onclick="shareToWA(${id}, waMessage)">&#128279; Open WhatsApp</button>
-      <button class="btn-dl-all" id="btn-dl-all" onclick="downloadAllImages(${id})">&#128248; All photos</button>
     </div>
-    <button class="btn-dl-card" onclick="downloadCard(${id})">&#127756; Download deal card (PNG)</button>
+    <button class="btn-dl-card" onclick="downloadCard(${id})">&#127756; Download deal card (PNG · all photos)</button>
     <button class="btn-mark-posted ${posted ? 'done' : ''}" id="btn-mark-posted" onclick="markPosted(${id})">
       ${posted ? '&#10003; Already posted to WA' : 'Mark as posted to WA'}
     </button>
@@ -446,6 +460,38 @@ async function openWA(id) {
   `;
 
   fetchYear(id);
+  fetchGallery(id);
+}
+
+async function fetchGallery(id) {
+  try {
+    const res  = await fetch(`/api/image-urls/${id}`);
+    const data = await res.json();
+    const g    = document.getElementById('img-gallery');
+    const c    = document.getElementById('img-count');
+    if (!g) return;
+    const urls = data.urls || [];
+    if (c) c.textContent = urls.length ? `(${urls.length} found)` : '';
+    if (!urls.length) {
+      g.innerHTML = '<span style="color:#aaa;font-size:0.8rem">No photos found on listing page</span>';
+      return;
+    }
+    g.innerHTML = urls.map((url, i) => `
+      <div style="flex:0 0 auto;position:relative">
+        <img src="${url}" width="96" height="76"
+             style="object-fit:cover;border-radius:7px;display:block;cursor:pointer;border:2px solid #e8f5ef"
+             onclick="window.open('${escapeHtml(url)}','_blank')"
+             onerror="this.closest('div').style.display='none'"
+             title="Click to open full size">
+        <a href="${escapeHtml(url)}" target="_blank"
+           style="position:absolute;bottom:3px;right:3px;background:rgba(8,80,65,0.75);
+                  color:#5DCAA5;font-size:0.68rem;padding:2px 5px;border-radius:4px;
+                  text-decoration:none;font-weight:700">&#8599;</a>
+      </div>`).join('');
+  } catch(_) {
+    const g = document.getElementById('img-gallery');
+    if (g) g.innerHTML = '<span style="color:#aaa;font-size:0.8rem">Could not load photos</span>';
+  }
 }
 
 async function fetchYear(id) {
