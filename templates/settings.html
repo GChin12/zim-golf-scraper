@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings &mdash; Kanda</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #E1F5EE; color: #0a1a0f; }
+
+  header { background: #0F6E56; color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-name { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 700; color: #fff; }
+  .brand-sub  { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; color: #5DCAA5; text-transform: uppercase; display: block; margin-top: 1px; }
+  nav { margin-left: auto; }
+  nav a { color: #5DCAA5; text-decoration: none; font-size: 0.85rem; padding: 5px 12px; border: 1px solid rgba(93,202,165,0.35); border-radius: 6px; }
+  nav a:hover { background: rgba(93,202,165,0.12); }
+
+  .stale-banner { background: #fff8e1; border-bottom: 2px solid #f59e0b; padding: 10px 24px; font-size: 0.85rem; color: #92400e; }
+  .stale-banner a { color: #92400e; font-weight: 700; }
+
+  .wrap { max-width: 640px; margin: 32px auto; padding: 0 24px 48px; }
+
+  .section { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,110,86,0.08); margin-bottom: 20px; overflow: hidden; }
+  .section-header { background: #f0faf5; border-bottom: 1px solid #c8e8dc; padding: 14px 20px; font-weight: 700; font-size: 0.88rem; color: #0F6E56; }
+  .section-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .field { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .field label { font-size: 0.85rem; color: #444; flex: 1; }
+  .field .sub { font-size: 0.75rem; color: #999; display: block; margin-top: 2px; }
+  .field input { width: 110px; padding: 8px 10px; border: 1px solid #b8ddd0; border-radius: 7px; font-size: 0.9rem; text-align: right; }
+  .field input:focus { outline: none; border-color: #1D9E75; }
+  .field .unit { font-size: 0.85rem; color: #888; min-width: 32px; }
+
+  .preview-box { background: #f0faf5; border: 1px solid #b8ddd0; border-radius: 10px; padding: 16px 20px; }
+  .preview-box h3 { font-size: 0.8rem; color: #5DCAA5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .preview-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; color: #4a6a5a; }
+  .preview-row.total { border-top: 2px solid #1D9E75; margin-top: 6px; padding-top: 8px; font-weight: 800; font-size: 0.95rem; color: #0F6E56; }
+  .preview-row.landed { border-top: 1px dashed #b8ddd0; margin-top: 4px; padding-top: 6px; color: #555; }
+
+  .btn-save { background: #1D9E75; color: #fff; border: none; border-radius: 8px; padding: 12px 32px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 8px; letter-spacing: 0.02em; }
+  .btn-save:hover { background: #0F6E56; }
+  .updated-at { font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 10px; }
+
+  .kanda-footer { text-align: center; margin-top: 32px; font-size: 0.78rem; color: #5DCAA5; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="38" height="38" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="400" rx="80" fill="#1D9E75"/>
+      <rect x="20" y="20" width="360" height="360" rx="60" fill="#0F6E56"/>
+      <line x1="110" y1="90" x2="110" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="90" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <circle cx="60" cy="60" r="18" fill="#5DCAA5" opacity="0.7"/>
+      <circle cx="340" cy="340" r="14" fill="#5DCAA5" opacity="0.5"/>
+    </svg>
+    <div>
+      <span class="brand-name">Kanda</span>
+      <span class="brand-sub">Pricing Settings</span>
+    </div>
+  </div>
+  <nav><a href="/">&larr; Back to deals</a></nav>
+</header>
+
+{% if rate_stale %}
+<div class="stale-banner">
+  &#9888; Exchange rate is more than {{ stale_days }} days old &mdash; update before pricing new deals.
+</div>
+{% endif %}
+
+<div class="wrap">
+<form method="post">
+
+  <div class="section">
+    <div class="section-header">&#128177; Exchange Rate</div>
+    <div class="section-body">
+      <div class="field">
+        <label>ZAR per 1 USD
+          <span class="sub">Update weekly or when the rate shifts significantly</span>
+        </label>
+        <input type="number" name="usd_rate" step="0.01" min="1" value="{{ cfg.usd_rate }}" required oninput="updatePreview()">
+        <span class="unit">ZAR</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">&#128200; Markup</div>
+    <div class="section-body">
+      <div class="field">
+        <label>Markup percentage
+          <span class="sub">Applied to total landed cost — 30–40% recommended</span>
+        </label>
+        <input type="number" name="markup_pct" step="0.5" min="0" max="200" value="{{ cfg.markup_pct }}" oninput="updatePreview()" required>
+        <span class="unit">%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">&#128666; Shipping (USD per item)</div>
+    <div class="section-body">
+      {% for name, val, label, sub in [
+        ("ship_clubs",  cfg.ship_clubs,  "Clubs",   "Full sets, individual clubs"),
+        ("ship_bags",   cfg.ship_bags,   "Bags",    "Stand, cart, staff bags"),
+        ("ship_balls",  cfg.ship_balls,  "Balls",   "Per box / dozen"),
+        ("ship_attire", cfg.ship_attire, "Attire",  "Shirts, shorts, jackets"),
+        ("ship_shoes",  cfg.ship_shoes,  "Shoes",   "Golf shoes, cleats"),
+        ("ship_other",  cfg.ship_other,  "Other",   "Gloves, accessories, etc."),
+      ] %}
+      <div class="field">
+        <label>{{ label }}<span class="sub">{{ sub }}</span></label>
+        <input type="number" name="{{ name }}" step="0.50" min="0" value="{{ val }}" oninput="updatePreview()" required>
+        <span class="unit">USD</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">&#128203; Other Costs</div>
+    <div class="section-body">
+      <div class="field">
+        <label>Customs / handling per item
+          <span class="sub">Border fees, agent charges, or buffer</span>
+        </label>
+        <input type="number" name="other_costs" step="0.50" min="0" value="{{ cfg.other_costs }}" oninput="updatePreview()" required>
+        <span class="unit">USD</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-box">
+    <h3>&#128202; Live example — clubs at R 2,500</h3>
+    <div class="preview-row"><span>Source (R2,500 &divide; rate)</span><span id="prev-source">—</span></div>
+    <div class="preview-row"><span>Shipping (clubs)</span><span id="prev-ship">—</span></div>
+    <div class="preview-row"><span>Other costs</span><span id="prev-other">—</span></div>
+    <div class="preview-row landed"><span>Landed cost</span><span id="prev-landed">—</span></div>
+    <div class="preview-row"><span>Markup (<span id="prev-pct">—</span>%)</span><span id="prev-markup">—</span></div>
+    <div class="preview-row total"><span>Sell at</span><span id="prev-sell">—</span></div>
+  </div>
+
+  <button class="btn-save" type="submit">Save settings</button>
+  {% if cfg.updated_at %}
+  <p class="updated-at">Last saved: {{ cfg.updated_at.strftime('%d %b %Y %H:%M') }} UTC</p>
+  {% endif %}
+
+</form>
+
+<div class="kanda-footer">KANDA SPORTS DEALS &nbsp;&middot;&nbsp; Up your game.</div>
+</div>
+
+<script>
+function f(n) { return '$' + n.toFixed(2); }
+function updatePreview() {
+  const rate   = parseFloat(document.querySelector('[name=usd_rate]').value)    || 18.5;
+  const markup = parseFloat(document.querySelector('[name=markup_pct]').value)  || 35;
+  const ship   = parseFloat(document.querySelector('[name=ship_clubs]').value)  || 15;
+  const other  = parseFloat(document.querySelector('[name=other_costs]').value) || 2;
+  const src    = 2500 / rate;
+  const land   = src + ship + other;
+  const mk     = land * markup / 100;
+  document.getElementById('prev-source').textContent  = f(src);
+  document.getElementById('prev-ship').textContent    = f(ship);
+  document.getElementById('prev-other').textContent   = f(other);
+  document.getElementById('prev-landed').textContent  = f(land);
+  document.getElementById('prev-pct').textContent     = markup;
+  document.getElementById('prev-markup').textContent  = f(mk);
+  document.getElementById('prev-sell').textContent    = f(land + mk);
+}
+updatePreview();
+</script>
+</body>
+</html>

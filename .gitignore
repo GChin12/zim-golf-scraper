@@ -1,0 +1,27 @@
+# Runtime data
+data/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Env
+.env
+.env.*
+
+# Editor / local tooling
+.claude/
+.idea/
+.vscode/
+
+# Deploy artifacts (for reference only, not needed in repo)
+deploy/

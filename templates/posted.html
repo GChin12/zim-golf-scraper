@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Posted to WhatsApp &mdash; Kanda</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #E1F5EE; color: #0a1a0f; }
+
+  header { background: #0F6E56; color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-name { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 700; color: #fff; }
+  .brand-sub  { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; color: #5DCAA5; text-transform: uppercase; display: block; margin-top: 1px; }
+  .pill { background: rgba(255,255,255,0.12); border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; }
+  nav { margin-left: auto; }
+  nav a { color: #5DCAA5; text-decoration: none; font-size: 0.85rem; padding: 5px 12px; border: 1px solid rgba(93,202,165,0.35); border-radius: 6px; }
+  nav a:hover { background: rgba(93,202,165,0.12); }
+
+  .wrap { padding: 24px; }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(15,110,86,0.10); }
+  th { background: #0F6E56; color: #fff; padding: 10px 14px; text-align: left; font-size: 0.79rem; font-weight: 700; white-space: nowrap; letter-spacing: 0.03em; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e8f5ef; font-size: 0.83rem; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f0faf5; }
+
+  .thumb { width: 54px; height: 44px; object-fit: cover; border-radius: 6px; background: #e8f5ef; display: block; }
+  .no-img { width: 54px; height: 44px; background: #e8f5ef; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #aaa; }
+
+  a.title-link { color: #0a1a0f; text-decoration: none; font-weight: 600; }
+  a.title-link:hover { text-decoration: underline; color: #1D9E75; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: capitalize; }
+  .badge.gumtree  { background: #d4edda; color: #155724; }
+  .badge.bidorbuy { background: #cce5ff; color: #004085; }
+  .badge.olx      { background: #fff3cd; color: #856404; }
+
+  .score { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; }
+  .score.hot { background: #1D9E75; color: #fff; }
+  .score.mid { background: #f59e0b; color: #fff; }
+  .score.low { background: #cbd5e1; color: #475569; }
+
+  .price { color: #555; font-weight: 700; white-space: nowrap; }
+  .sell  { color: #1D9E75; font-weight: 800; white-space: nowrap; }
+  .ts    { color: #aaa; font-size: 0.76rem; white-space: nowrap; }
+  .wa-dot { display: inline-block; width: 7px; height: 7px; background: #1D9E75; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .empty { text-align: center; padding: 60px; color: #aaa; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="38" height="38" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="400" rx="80" fill="#1D9E75"/>
+      <rect x="20" y="20" width="360" height="360" rx="60" fill="#0F6E56"/>
+      <line x1="110" y1="90" x2="110" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="90" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <circle cx="60" cy="60" r="18" fill="#5DCAA5" opacity="0.7"/>
+      <circle cx="340" cy="340" r="14" fill="#5DCAA5" opacity="0.5"/>
+    </svg>
+    <div>
+      <span class="brand-name">Kanda</span>
+      <span class="brand-sub">Posted to WhatsApp</span>
+    </div>
+  </div>
+  <span class="pill">{{ listings|length }} listing{{ 's' if listings|length != 1 }}</span>
+  <nav><a href="/">&larr; Back to deals</a></nav>
+</header>
+
+<div class="wrap">
+  {% if listings %}
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Score</th>
+        <th>Title</th>
+        <th>Source (R)</th>
+        <th>Sell ($)</th>
+        <th>Brand</th>
+        <th>Category</th>
+        <th>Condition</th>
+        <th>Platform</th>
+        <th>Posted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in listings %}
+      <tr>
+        <td>
+          {% if l.image_url %}
+          <img class="thumb" src="{{ l.image_url }}" alt="" loading="lazy" onerror="this.style.display='none'">
+          {% else %}
+          <div class="no-img">no img</div>
+          {% endif %}
+        </td>
+        <td>
+          <span class="score {% if l.deal_score >= 65 %}hot{% elif l.deal_score >= 50 %}mid{% else %}low{% endif %}">
+            {{ l.deal_score }}
+          </span>
+        </td>
+        <td><a class="title-link" href="{{ l.url }}" target="_blank" rel="noopener">{{ l.title[:65] }}{% if l.title|length > 65 %}…{% endif %}</a></td>
+        <td class="price">{% if l.price_zar %}R{{ "{:,.0f}".format(l.price_zar) }}{% else %}&mdash;{% endif %}</td>
+        <td class="sell">{% if l.id in sell_prices %}${{ "{:,.0f}".format(sell_prices[l.id]) }}{% else %}&mdash;{% endif %}</td>
+        <td>{{ l.brand or "&mdash;" }}</td>
+        <td>{{ l.category or "&mdash;" }}</td>
+        <td>{{ l.condition or "&mdash;" }}</td>
+        <td><span class="badge {{ l.platform }}">{{ l.platform }}</span></td>
+        <td class="ts"><span class="wa-dot"></span>{{ l.wa_posted_at.strftime('%d %b %Y %H:%M') if l.wa_posted_at else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No listings posted to WhatsApp yet.</div>
+  {% endif %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Interests &mdash; Zim Golf Deals</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f4f6f9; color: #1a1a2e; }
+  header { background: #1a1a2e; color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 1.2rem; font-weight: 700; }
+  nav a { color: #aac4ff; text-decoration: none; font-size: 0.85rem; }
+  nav a:hover { text-decoration: underline; }
+  .wrap { padding: 24px; }
+  h2 { font-size: 1rem; margin-bottom: 16px; color: #555; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  th { background: #1a1a2e; color: #fff; padding: 10px 14px; text-align: left; font-size: 0.8rem; font-weight: 600; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; font-size: 0.83rem; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8f9ff; }
+  .wa-link { color: #25d366; font-weight: 600; text-decoration: none; }
+  .wa-link:hover { text-decoration: underline; }
+  .listing-link { color: #1a1a2e; text-decoration: none; font-weight: 500; font-size: 0.8rem; }
+  .listing-link:hover { text-decoration: underline; color: #3a3a8e; }
+  .msg { color: #666; font-style: italic; }
+  .ts { color: #aaa; font-size: 0.75rem; white-space: nowrap; }
+  .empty { text-align: center; padding: 60px; color: #aaa; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#128172; Buyer Interests</h1>
+  <nav style="margin-left:auto"><a href="/">&larr; Back to deals</a></nav>
+</header>
+<div class="wrap">
+  <h2>{{ interests|length }} interest submission{{ 's' if interests|length != 1 }}</h2>
+  {% if interests %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>WhatsApp</th>
+        <th>Listing</th>
+        <th>Message</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in interests %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><strong>{{ i.name }}</strong></td>
+        <td>
+          <a class="wa-link" href="https://wa.me/{{ i.whatsapp_number | replace(' ','') | replace('+','') }}" target="_blank">
+            {{ i.whatsapp_number }}
+          </a>
+        </td>
+        <td>
+          {% if i.listing_url %}
+          <a class="listing-link" href="{{ i.listing_url }}" target="_blank">{{ (i.listing_title or i.listing_url)[:55] }}{% if (i.listing_title or '')|length > 55 %}…{% endif %}</a>
+          {% else %}&mdash;{% endif %}
+        </td>
+        <td class="msg">{{ i.message or '&mdash;' }}</td>
+        <td class="ts">{{ i.created_at.strftime('%d %b %Y %H:%M') if i.created_at else '&mdash;' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No buyer interests yet.</div>
+  {% endif %}
+</div>
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanda Sports Deals</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #E1F5EE; color: #0a1a0f; }
+
+  /* ── Header ── */
+  header { background: #0F6E56; color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-name { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  .brand-sub { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; color: #5DCAA5; text-transform: uppercase; display: block; margin-top: 1px; }
+  .stat-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill { background: rgba(255,255,255,0.12); border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; }
+  .pill.hot { background: #085041; color: #5DCAA5; }
+  nav { margin-left: auto; display: flex; gap: 8px; }
+  nav a { color: #5DCAA5; text-decoration: none; font-size: 0.83rem; padding: 5px 12px; border: 1px solid rgba(93,202,165,0.35); border-radius: 6px; }
+  nav a:hover { background: rgba(93,202,165,0.12); }
+
+  /* ── Stale banner ── */
+  .stale-banner { background: #fff8e1; border-bottom: 2px solid #f59e0b; padding: 9px 24px; font-size: 0.83rem; color: #92400e; }
+  .stale-banner a { color: #92400e; font-weight: 700; }
+
+  /* ── Filters ── */
+  .filters { background: #fff; border-bottom: 1px solid #c8e8dc; padding: 12px 24px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .filters label { font-size: 0.78rem; color: #555; display: flex; flex-direction: column; gap: 3px; }
+  .filters select, .filters input[type=number] { padding: 6px 10px; border: 1px solid #b8ddd0; border-radius: 6px; font-size: 0.85rem; min-width: 120px; }
+  .filters select:focus, .filters input:focus { outline: none; border-color: #1D9E75; }
+  .filters .check-group { display: flex; flex-direction: column; gap: 5px; align-self: flex-end; }
+  .filters .check-group label { flex-direction: row; align-items: center; gap: 6px; font-size: 0.82rem; }
+  .filters button { padding: 7px 18px; background: #1D9E75; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; align-self: flex-end; font-weight: 600; }
+  .filters button:hover { background: #0F6E56; }
+  .filters a.reset { align-self: flex-end; font-size: 0.82rem; color: #999; text-decoration: none; padding: 7px 4px; }
+
+  /* ── Result bar ── */
+  .result-bar { padding: 10px 24px; font-size: 0.83rem; color: #4a6a5a; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; padding: 0 24px 32px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(15,110,86,0.10); margin-top: 12px; }
+  th { background: #0F6E56; color: #fff; padding: 10px 12px; text-align: left; font-size: 0.79rem; font-weight: 700; white-space: nowrap; letter-spacing: 0.03em; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e8f5ef; font-size: 0.82rem; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f0faf5; }
+  tr.hot-row td:first-child { border-left: 4px solid #1D9E75; }
+  tr.hot-row { background: linear-gradient(90deg, #f0faf5 0%, #fff 60%); }
+
+  /* ── Score badge (circular) ── */
+  .score { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.76rem; }
+  .score.hot { background: #1D9E75; color: #fff; }
+  .score.mid { background: #f59e0b; color: #fff; }
+  .score.low { background: #cbd5e1; color: #475569; }
+
+  /* ── Hot deal pill ── */
+  .hot-pill { background: #E1F5EE; color: #085041; border-radius: 20px; padding: 2px 9px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; margin-left: 5px; vertical-align: middle; white-space: nowrap; }
+
+  /* ── Other table elements ── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: capitalize; }
+  .badge.gumtree  { background: #d4edda; color: #155724; }
+  .badge.bidorbuy { background: #cce5ff; color: #004085; }
+  .badge.olx      { background: #fff3cd; color: #856404; }
+
+  .thumb { width: 52px; height: 42px; object-fit: cover; border-radius: 6px; background: #e8f5ef; display: block; }
+  .no-img { width: 52px; height: 42px; background: #e8f5ef; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #aaa; }
+
+  a.title-link { color: #0a1a0f; text-decoration: none; font-weight: 600; }
+  a.title-link:hover { text-decoration: underline; color: #1D9E75; }
+
+  .price    { font-weight: 700; color: #555; white-space: nowrap; }
+  .sell-price { font-weight: 800; color: #1D9E75; white-space: nowrap; }
+  .sell-price.no-price { color: #bbb; font-weight: 400; font-style: italic; }
+  .location { color: #888; font-size: 0.76rem; }
+
+  .btn-wa { background: #1D9E75; color: #fff; border: none; border-radius: 5px; padding: 5px 9px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .btn-wa:hover { background: #0F6E56; }
+  .btn-wa.posted { background: #a8c5bb; cursor: default; }
+
+  /* ── Pagination ── */
+  .pagination { display: flex; justify-content: center; gap: 6px; padding: 16px 24px; flex-wrap: wrap; }
+  .pagination a, .pagination span { padding: 6px 13px; border-radius: 6px; font-size: 0.85rem; text-decoration: none; border: 1px solid #c8e8dc; background: #fff; color: #0F6E56; }
+  .pagination span.current { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+  .pagination a:hover { background: #E1F5EE; }
+
+  /* ── Modals ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(8,80,65,0.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; box-shadow: 0 12px 48px rgba(15,110,86,0.25); }
+  .modal-header { padding: 16px 20px 12px; border-bottom: 1px solid #e8f5ef; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 1; }
+  .modal-header h2 { font-size: 0.95rem; color: #0a1a0f; display: flex; align-items: center; gap: 8px; }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #aaa; line-height: 1; }
+  .modal-close:hover { color: #555; }
+  .modal-body { padding: 20px; }
+
+  /* ── WA card preview ── */
+  .wa-card { border-radius: 12px; overflow: hidden; border: 1px solid #e0e0e0; margin-bottom: 16px; }
+  .wa-card-img { width: 100%; height: 200px; object-fit: cover; background: #e8f5ef; display: block; }
+  .wa-card-img-placeholder { width: 100%; height: 150px; background: #0F6E56; display: flex; align-items: center; justify-content: center; }
+  .wa-card-body { padding: 14px 16px; }
+  .wa-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+  .wa-card-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.82rem; color: #555; }
+
+  .wa-msg-box { background: #f0faf5; border: 1px solid #b8ddd0; border-radius: 8px; padding: 12px; font-size: 0.82rem; white-space: pre-wrap; line-height: 1.55; max-height: 180px; overflow-y: auto; margin-bottom: 10px; font-family: monospace; }
+  .btn-copy { background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; padding: 7px 14px; font-size: 0.83rem; cursor: pointer; }
+  .btn-copy:hover { background: #e0e0e0; }
+  .btn-copy.copied { background: #E1F5EE; border-color: #1D9E75; color: #0F6E56; }
+
+  .btn-share-wa { background: #1D9E75; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 0.9rem; cursor: pointer; font-weight: 700; flex: 1; }
+  .btn-share-wa:hover { background: #0F6E56; }
+  .btn-dl-all { background: #fff; color: #1D9E75; border: 2px solid #1D9E75; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .btn-dl-all:hover { background: #E1F5EE; }
+  .btn-dl-all.loading { border-color: #aaa; color: #aaa; cursor: wait; }
+  .btn-dl-card { background: #085041; color: #5DCAA5; border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 600; margin-top: 6px; width: 100%; }
+  .btn-dl-card:hover { background: #0F6E56; }
+
+  .btn-mark-posted { background: #fff; color: #888; border: 1px solid #ddd; border-radius: 8px; padding: 8px 14px; font-size: 0.8rem; cursor: pointer; margin-top: 6px; width: 100%; }
+  .btn-mark-posted:hover { background: #f9f9f9; }
+  .btn-mark-posted.done { color: #1D9E75; border-color: #1D9E75; }
+
+  /* ── Pricing box ── */
+  .pricing-box { background: #f0faf5; border: 1px solid #b8ddd0; border-radius: 10px; padding: 14px 16px; margin: 12px 0 10px; }
+  .pricing-box h3 { font-size: 0.75rem; font-weight: 700; color: #5DCAA5; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .p-row { display: flex; justify-content: space-between; font-size: 0.84rem; padding: 3px 0; color: #4a6a5a; }
+  .p-row.landed { border-top: 1px dashed #b8ddd0; margin-top: 5px; padding-top: 6px; }
+  .p-row.sell { border-top: 2px solid #1D9E75; margin-top: 5px; padding-top: 8px; font-weight: 800; font-size: 1rem; color: #0F6E56; }
+  .p-override { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8f5ef; font-size: 0.82rem; color: #666; }
+  .p-override input { width: 90px; padding: 5px 8px; border: 1px solid #b8ddd0; border-radius: 6px; font-size: 0.88rem; text-align: right; }
+  .p-override input:focus { outline: none; border-color: #1D9E75; }
+  .no-price-msg { font-size: 0.82rem; color: #aaa; font-style: italic; padding: 8px 0; }
+
+  /* ── Year row ── */
+  .year-row { display: flex; align-items: center; gap: 10px; background: #f0faf5; border: 1px solid #b8ddd0; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; font-size: 0.84rem; color: #4a6a5a; }
+  .year-row input { width: 100px; padding: 5px 8px; border: 1px solid #b8ddd0; border-radius: 6px; font-size: 0.88rem; text-align: center; }
+  .year-row input:focus { outline: none; border-color: #1D9E75; }
+
+  /* ── Kanda footer in modal ── */
+  .kanda-footer { text-align: center; font-size: 0.74rem; color: #5DCAA5; margin-top: 14px; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="400" height="400" rx="80" fill="#1D9E75"/>
+      <rect x="20" y="20" width="360" height="360" rx="60" fill="#0F6E56"/>
+      <line x1="110" y1="90" x2="110" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="90" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <line x1="110" y1="200" x2="290" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+      <circle cx="60" cy="60" r="18" fill="#5DCAA5" opacity="0.7"/>
+      <circle cx="340" cy="340" r="14" fill="#5DCAA5" opacity="0.5"/>
+    </svg>
+    <div>
+      <span class="brand-name">Kanda</span>
+      <span class="brand-sub">Sports Deals</span>
+    </div>
+  </div>
+  <div class="stat-pills">
+    <span class="pill">{{ stats.total }} listings</span>
+    <span class="pill hot">{{ stats.hot }} hot deals</span>
+    {% for p, n in stats.platforms.items() %}
+    <span class="pill">{{ p }}: {{ n }}</span>
+    {% endfor %}
+  </div>
+  <nav>
+    <a href="/posted">&#128279; Posted ({{ stats.posted }})</a>
+    <a href="/settings">&#9881; Settings</a>
+  </nav>
+</header>
+
+<!-- Scrape status bar -->
+<div id="scrape-bar" style="background:#085041;color:#5DCAA5;padding:7px 24px;font-size:0.8rem;display:flex;align-items:center;gap:16px;">
+  <span id="scrape-status-text">Checking scraper&hellip;</span>
+  <button onclick="triggerScrape()" id="btn-scrape"
+    style="background:#1D9E75;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-weight:600;margin-left:auto">
+    Scrape now
+  </button>
+</div>
+
+{% if rate_stale %}
+<div class="stale-banner">
+  &#9888; Exchange rate (R{{ usd_rate }}/USD)
+  {% if rate_age_days %}is {{ rate_age_days }} days old{% else %}has never been set{% endif %}
+  &mdash; <a href="/settings">update it</a> before pricing deals.
+</div>
+{% endif %}
+
+<form class="filters" method="get">
+  <label>Platform
+    <select name="platform">
+      <option value="">All</option>
+      {% for p in platforms %}
+      <option value="{{ p }}" {% if filters.platform == p %}selected{% endif %}>{{ p|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Category
+    <select name="category">
+      <option value="">All</option>
+      {% for c in categories %}
+      <option value="{{ c }}" {% if filters.category == c %}selected{% endif %}>{{ c|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Condition
+    <select name="condition">
+      <option value="">All</option>
+      {% for c in conditions %}
+      <option value="{{ c }}" {% if filters.condition == c %}selected{% endif %}>{{ c|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Min score
+    <input type="number" name="min_score" min="0" max="100" placeholder="0" value="{{ filters.min_score }}">
+  </label>
+  <label>Max price (R)
+    <input type="number" name="max_price" min="0" placeholder="any" value="{{ filters.max_price }}">
+  </label>
+  <div class="check-group">
+    <label><input type="checkbox" name="hot_only"  value="1" {% if filters.hot_only  %}checked{% endif %}> Hot deals only</label>
+    <label><input type="checkbox" name="gauteng"   value="1" {% if filters.gauteng   %}checked{% endif %}> Gauteng only</label>
+    <label><input type="checkbox" name="golf_only" value="1" {% if filters.golf_only %}checked{% endif %}> Golf items only</label>
+  </div>
+  <button type="submit">Filter</button>
+  <a class="reset" href="/">Reset</a>
+</form>
+
+<div class="result-bar">
+  Showing {{ listings|length }} of {{ total }} results
+  {% if total > 0 %} &mdash; page {{ page }} of {{ pages }}{% endif %}
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Score</th>
+        <th>Title</th>
+        <th>Source (R)</th>
+        <th>Sell ($)</th>
+        <th>Brand</th>
+        <th>Category</th>
+        <th>Condition</th>
+        <th>Platform</th>
+        <th>Location</th>
+        <th>Post</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in listings %}
+      <tr{% if l.is_hot_deal %} class="hot-row"{% endif %}>
+        <td>
+          {% if l.image_url %}
+          <img class="thumb" src="{{ l.image_url }}" alt="" loading="lazy" onerror="this.style.display='none'">
+          {% else %}
+          <div class="no-img">no img</div>
+          {% endif %}
+        </td>
+        <td>
+          <span class="score {% if l.deal_score >= 65 %}hot{% elif l.deal_score >= 50 %}mid{% else %}low{% endif %}">
+            {{ l.deal_score }}
+          </span>
+        </td>
+        <td>
+          <a class="title-link" href="{{ l.url }}" target="_blank" rel="noopener">{{ l.title[:60] }}{% if l.title|length > 60 %}…{% endif %}</a>
+          {% if l.is_hot_deal %}<span class="hot-pill">Hot deal</span>{% endif %}
+        </td>
+        <td class="price">{% if l.price_zar %}R{{ "{:,.0f}".format(l.price_zar) }}{% else %}<span style="color:#ccc">—</span>{% endif %}</td>
+        <td>
+          {% if l.id in sell_prices %}
+          <span class="sell-price">${{ "{:,.0f}".format(sell_prices[l.id]) }}</span>
+          {% else %}
+          <span class="sell-price no-price">check</span>
+          {% endif %}
+        </td>
+        <td>{{ l.brand or "&mdash;" }}</td>
+        <td>{{ l.category or "&mdash;" }}</td>
+        <td>{{ l.condition or "&mdash;" }}</td>
+        <td><span class="badge {{ l.platform }}">{{ l.platform }}</span></td>
+        <td class="location">{{ l.location or "&mdash;" }}</td>
+        <td>
+          <button class="btn-wa {% if l.posted_to_wa %}posted{% endif %}"
+                  onclick="openWA({{ l.id }})"
+                  title="{% if l.posted_to_wa %}Already posted{% else %}Post to WhatsApp{% endif %}">
+            &#128279; WA
+          </button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="11" style="text-align:center;padding:48px;color:#aaa;">No listings found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}<a href="{{ page_url(page - 1) }}">&lsaquo; Prev</a>{% endif %}
+  {% for p in range([1, page - 2]|max, [pages + 1, page + 3]|min) %}
+    {% if p == page %}<span class="current">{{ p }}</span>
+    {% else %}<a href="{{ page_url(p) }}">{{ p }}</a>{% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="{{ page_url(page + 1) }}">Next &rsaquo;</a>{% endif %}
+</div>
+{% endif %}
+
+
+<!-- ── WhatsApp Modal ── -->
+<div class="overlay" id="wa-overlay" onclick="closeOnBackdrop(event,'wa-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="400" rx="80" fill="#1D9E75"/>
+          <rect x="20" y="20" width="360" height="360" rx="60" fill="#0F6E56"/>
+          <line x1="110" y1="90" x2="110" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+          <line x1="110" y1="200" x2="290" y2="90" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+          <line x1="110" y1="200" x2="290" y2="310" stroke="#E1F5EE" stroke-width="40" stroke-linecap="round"/>
+        </svg>
+        Post to WhatsApp
+      </h2>
+      <button class="modal-close" onclick="closeModal('wa-overlay')">&times;</button>
+    </div>
+    <div class="modal-body" id="wa-modal-body">
+      <p style="color:#aaa;text-align:center;padding:32px 0">Loading&hellip;</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let waMessage = '';
+let currentCardId = null;
+
+function fmt(n)  { return '$' + n.toFixed(2); }
+function fmtI(n) { return '$' + Math.round(n); }
+
+async function shareToWA(id, message) {
+  await markPosted(id);
+  window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+async function downloadCard(id) {
+  const year = document.getElementById('year-input')?.value || '';
+  const sell = document.getElementById(`override-${id}`)?.value || '';
+  const params = new URLSearchParams({ year });
+  if (sell) params.set('sell_usd', sell);
+  window.location.href = `/api/card/${id}?${params}`;
+}
+
+async function downloadAllImages(id) {
+  const btn = document.getElementById('btn-dl-all');
+  if (btn) { btn.textContent = '⏳ Fetching…'; btn.classList.add('loading'); btn.disabled = true; }
+  try {
+    const res = await fetch(`/api/images/${id}`);
+    if (!res.ok) { alert('No images could be downloaded for this listing.'); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const disp = res.headers.get('Content-Disposition') || '';
+    const name = (disp.match(/filename="?([^"]+)"?/) || [])[1] || `kanda-deal-${id}.zip`;
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  } finally {
+    if (btn) { btn.textContent = '🖼 All photos'; btn.classList.remove('loading'); btn.disabled = false; }
+  }
+}
+
+async function openWA(id) {
+  currentCardId = id;
+  waMessage = '';
+  document.getElementById('wa-overlay').classList.add('open');
+  document.getElementById('wa-modal-body').innerHTML = '<p style="color:#aaa;text-align:center;padding:32px 0">Loading&hellip;</p>';
+
+  const res  = await fetch(`/api/listing/${id}`);
+  const data = await res.json();
+  waMessage  = data.wa_message;
+
+  const posted = data.posted_to_wa;
+  const img    = data.image_url
+    ? `<img class="wa-card-img" src="${data.image_url}" onerror="this.style.display='none'">`
+    : `<div class="wa-card-img-placeholder"><svg width="60" height="60" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="400" rx="80" fill="#1D9E75" opacity="0.3"/><line x1="110" y1="90" x2="110" y2="310" stroke="#5DCAA5" stroke-width="40" stroke-linecap="round"/><line x1="110" y1="200" x2="290" y2="90" stroke="#5DCAA5" stroke-width="40" stroke-linecap="round"/><line x1="110" y1="200" x2="290" y2="310" stroke="#5DCAA5" stroke-width="40" stroke-linecap="round"/></svg></div>`;
+
+  const metaParts = [];
+  if (data.brand && data.brand !== 'Unknown') metaParts.push(`<b>${escapeHtml(data.brand)}</b>`);
+  if (data.condition) metaParts.push(escapeHtml(data.condition));
+  const hotBadge = data.is_hot_deal
+    ? '<span style="background:#E1F5EE;color:#085041;border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:700;margin-right:6px">HOT DEAL</span>'
+    : '';
+
+  // Pricing breakdown
+  let pricingHtml = '';
+  const p = data.pricing;
+  if (p) {
+    pricingHtml = `
+      <div class="pricing-box">
+        <h3>&#128200; Pricing (internal)</h3>
+        <div class="p-row"><span>Source (R${data.price_zar?.toLocaleString('en-ZA',{maximumFractionDigits:0}) ?? '?'} ÷ ${p.usd_rate})</span><span>${fmt(p.sourcing_usd)}</span></div>
+        <div class="p-row"><span>Shipping</span><span>${fmt(p.shipping_usd)}</span></div>
+        <div class="p-row"><span>Other costs</span><span>${fmt(p.other_usd)}</span></div>
+        <div class="p-row landed"><span>Landed</span><span>${fmt(p.landed_usd)}</span></div>
+        <div class="p-row"><span>Markup (${p.markup_pct}%)</span><span>+ ${fmt(p.markup_usd)}</span></div>
+        <div class="p-row sell"><span>Sell at</span><span id="sell-display">${fmtI(p.sell_usd)}</span></div>
+        <div class="p-override">
+          <span>Override:</span><span>$</span>
+          <input type="number" id="override-${id}" value="${Math.round(p.sell_usd)}" step="1" min="0" oninput="onOverride(this.value)">
+        </div>
+      </div>`;
+  } else {
+    pricingHtml = `<p class="no-price-msg">&#128200; No source price — check listing for quote.</p>`;
+  }
+
+  document.getElementById('wa-modal-body').innerHTML = `
+    <div class="wa-card">
+      ${img}
+      <div class="wa-card-body">
+        <div class="wa-card-title">${hotBadge}${escapeHtml(data.title || '')}</div>
+        <div class="wa-card-meta">${metaParts.join(' · ')}</div>
+      </div>
+    </div>
+    <div class="year-row">
+      <span>&#128197; Year:</span>
+      <span id="year-spinner" style="color:#aaa;font-size:0.8rem">searching&hellip;</span>
+      <input type="number" id="year-input" placeholder="e.g. 2019" min="1970" max="2025"
+             style="display:none" oninput="onYearChange(this.value)">
+    </div>
+    ${pricingHtml}
+    <p style="font-size:0.8rem;color:#888;margin-bottom:6px">WhatsApp message:</p>
+    <div class="wa-msg-box">${escapeHtml(data.wa_message)}</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="btn-copy" id="btn-copy" onclick="copyMessage()">&#128203; Copy</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="btn-share-wa" onclick="shareToWA(${id}, waMessage)">&#128279; Open WhatsApp</button>
+      <button class="btn-dl-all" id="btn-dl-all" onclick="downloadAllImages(${id})">&#128248; All photos</button>
+    </div>
+    <button class="btn-dl-card" onclick="downloadCard(${id})">&#127756; Download deal card (PNG)</button>
+    <button class="btn-mark-posted ${posted ? 'done' : ''}" id="btn-mark-posted" onclick="markPosted(${id})">
+      ${posted ? '&#10003; Already posted to WA' : 'Mark as posted to WA'}
+    </button>
+    <div class="kanda-footer">KANDA SPORTS DEALS &nbsp;&middot;&nbsp; Up your game.</div>
+  `;
+
+  fetchYear(id);
+}
+
+async function fetchYear(id) {
+  try {
+    const res  = await fetch(`/api/year/${id}`);
+    const data = await res.json();
+    const spinner = document.getElementById('year-spinner');
+    const input   = document.getElementById('year-input');
+    if (!spinner || !input) return;
+    spinner.style.display = 'none';
+    input.style.display   = '';
+    input.value = data.year || '';
+    if (data.year) onYearChange(data.year);
+  } catch (_) {
+    const s = document.getElementById('year-spinner');
+    if (s) s.textContent = '—';
+    const i = document.getElementById('year-input');
+    if (i) i.style.display = '';
+  }
+}
+
+function onYearChange(val) {
+  const yearLine = val ? `📅 ${val}` : '';
+  let msg = waMessage.replace(/📅 \d{4}(\s·\s·\s·)?/g, '').replace(/\n{3,}/g, '\n\n');
+  if (yearLine) {
+    // Inject year into the info line (after description, before hook)
+    const hasPrice = msg.includes('💵');
+    if (hasPrice) {
+      msg = msg.replace(/(💵 \$[\d,]+)/, `📅 ${val}  ·  $1`);
+    } else {
+      msg = msg.replace(/\n(\w[^\n]*Up your game)/, `\n📅 ${val}\n\n$1`);
+    }
+  }
+  waMessage = msg;
+  const box = document.querySelector('.wa-msg-box');
+  if (box) box.textContent = msg;
+}
+
+function onOverride(val) {
+  const disp = document.getElementById('sell-display');
+  if (disp) disp.textContent = '$' + val;
+  const newPrice = `💵 $${val}`;
+  waMessage = waMessage.replace(/💵 \$[\d,]+/, newPrice);
+  const box = document.querySelector('.wa-msg-box');
+  if (box) box.textContent = waMessage;
+}
+
+async function markPosted(id) {
+  await fetch(`/api/mark-posted/${id}`, { method: 'POST' });
+  const btn = document.getElementById('btn-mark-posted');
+  if (btn) { btn.textContent = '✓ Marked as posted'; btn.classList.add('done'); }
+  document.querySelectorAll('.btn-wa').forEach(b => {
+    if (b.getAttribute('onclick') === `openWA(${id})`) {
+      b.classList.add('posted'); b.title = 'Already posted';
+    }
+  });
+}
+
+function copyMessage() {
+  const text = document.querySelector('.wa-msg-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Scrape status ──────────────────────────────────────────────────────────
+async function pollScrapeStatus() {
+  try {
+    const res  = await fetch('/api/scrape/status');
+    const data = await res.json();
+    const bar  = document.getElementById('scrape-status-text');
+    const btn  = document.getElementById('btn-scrape');
+    if (!bar) return;
+    if (data.running) {
+      bar.textContent = '⏳ Scraping in progress…';
+      if (btn) { btn.textContent = 'Running…'; btn.disabled = true; }
+    } else {
+      let msg = '';
+      if (data.last_run) msg += `Last scraped: ${data.last_run}`;
+      if (data.last_new !== null) msg += `  ·  +${data.last_new} new, ${data.last_hot} hot`;
+      if (data.next_in)  msg += `  ·  Next in: ${data.next_in}`;
+      bar.textContent = msg || 'Scraper ready';
+      if (btn) { btn.textContent = 'Scrape now'; btn.disabled = false; }
+    }
+  } catch (_) {}
+}
+
+async function triggerScrape() {
+  const btn = document.getElementById('btn-scrape');
+  if (btn) { btn.textContent = 'Starting…'; btn.disabled = true; }
+  await fetch('/api/scrape', { method: 'POST' });
+  setTimeout(pollScrapeStatus, 800);
+  // Keep polling while running
+  const interval = setInterval(async () => {
+    await pollScrapeStatus();
+    const res  = await fetch('/api/scrape/status');
+    const data = await res.json();
+    if (!data.running) {
+      clearInterval(interval);
+      location.reload();  // refresh table with new listings
+    }
+  }, 4000);
+}
+
+pollScrapeStatus();
+setInterval(pollScrapeStatus, 30000);  // refresh status every 30s
+
+function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
+function closeOnBackdrop(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+function escapeHtml(s)   { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
