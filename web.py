@@ -206,18 +206,13 @@ def _prepare_card_data(listing, pricing, year: str, sell_usd) -> dict:
     cond_clean = (listing.condition or "").replace("_", " ").title()
     cat_label  = _CAT_LABELS.get(listing.category or "", "Equipment")
 
-    # Specs pills: up to 5
+    # Specs pills
     specs = []
     if cond_clean:
         specs.append({"label": "Condition", "value": cond_clean})
     specs.append({"label": "Type", "value": cat_label})
     if year:
         specs.append({"label": "Year", "value": year})
-    if listing.location:
-        city = listing.location.split(",")[0].strip()[:16]
-        if city:
-            specs.append({"label": "Location", "value": city})
-    specs.append({"label": "Source", "value": listing.platform.title()})
 
     # Subtitle from description
     desc    = listing.description or ""
@@ -243,8 +238,7 @@ def _prepare_card_data(listing, pricing, year: str, sell_usd) -> dict:
         "category":              listing.category or "other",
         "description":           desc,
         "subtitle":              subtitle,
-        "specs":                 specs[:5],
-        "price_zar":             listing.price_zar,
+        "specs":                 specs,
         "sell_usd":              sell_usd,
         "year":                  year,
         "location":              listing.location or "",

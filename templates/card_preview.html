@@ -506,23 +506,22 @@ body {
     <!-- e. Divider -->
     <div class="divider fade-up" style="animation-delay:.45s"></div>
 
-    <!-- f. Price row -->
+    <!-- f. Price -->
+    {% if sell_usd %}
     <div class="price-row fade-up" style="animation-delay:.45s">
       <div>
-        <p class="price-label">Asking price</p>
+        <p class="price-label">Price</p>
         <div class="price-amount">
-          <sup class="price-sup">R</sup>
-          <span>{{ "{:,.0f}".format(price_zar) if price_zar else "—" }}</span>
+          <sup class="price-sup">$</sup>
+          <span>{{ "{:,.0f}".format(sell_usd) }}</span>
         </div>
       </div>
-      {% if sell_usd %}
       <div class="savings-box">
-        <p class="savings-label">Sell price</p>
-        <p class="savings-amt">${{ "{:,.0f}".format(sell_usd) }}</p>
-        <p class="savings-sub">Save ~65% vs New</p>
+        <p class="savings-label">vs. New</p>
+        <p class="savings-amt">Save ~65%</p>
       </div>
-      {% endif %}
     </div>
+    {% endif %}
 
     <!-- g. CTAs -->
     <div class="cta-stack fade-up" style="animation-delay:.5s">

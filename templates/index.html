@@ -339,6 +339,15 @@ function fmt(n)  { return '$' + n.toFixed(2); }
 function fmtI(n) { return '$' + Math.round(n); }
 
 async function shareToWA(id, message) {
+  // 1. Download the deal card so the user can attach it in WhatsApp
+  const year = document.getElementById('year-input')?.value || '';
+  const sell = document.getElementById(`override-${id}`)?.value || '';
+  const params = new URLSearchParams({ year });
+  if (sell) params.set('sell_usd', sell);
+  window.location.href = `/api/card/${id}?${params}`;
+
+  // 2. Open WhatsApp with the pre-filled message after a brief delay
+  await new Promise(r => setTimeout(r, 700));
   await markPosted(id);
   window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
 }
@@ -450,10 +459,10 @@ async function openWA(id) {
       <button class="btn-copy" id="btn-copy" onclick="copyMessage()">&#128203; Copy message</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:6px">
-      <button class="btn-share-wa" onclick="shareToWA(${id}, waMessage)">&#128279; Open WhatsApp</button>
+      <button class="btn-share-wa" onclick="shareToWA(${id}, waMessage)" title="Downloads card image then opens WhatsApp">&#128247; Save card &amp; Open WhatsApp</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:6px">
-      <button class="btn-dl-card" onclick="downloadCard(${id})" style="flex:1">&#127756; Download card (PNG)</button>
+      <button class="btn-dl-card" onclick="downloadCard(${id})" style="flex:1">&#127756; Download card only</button>
       <a href="/card-preview/${id}" target="_blank" rel="noopener"
          id="btn-preview-card"
          style="flex:0 0 auto;background:rgba(201,168,76,0.1);color:#C9A84C;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;font-size:0.82rem;text-decoration:none;display:flex;align-items:center;white-space:nowrap;font-weight:600">
