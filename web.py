@@ -653,6 +653,8 @@ def deal_card(listing_id):
         from flask import Response
         return Response(png, mimetype='image/png',
                         headers={"Content-Disposition": f'attachment; filename="{safe}.png"'})
+    finally:
+        db.close()
 
 
 @app.route("/api/image-urls/<int:listing_id>")
