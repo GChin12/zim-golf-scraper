@@ -14,7 +14,7 @@ import random
 import threading
 import zipfile
 from datetime import datetime, timedelta
-from urllib.parse import urlencode, urlparse, urljoin
+from urllib.parse import urlencode, urlparse, urljoin, quote as urlquote
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -180,6 +180,102 @@ HOOKS = {
         "The course won't know what hit it.",
     ],
 }
+
+_CAT_LABELS = {
+    "clubs": "Club Set", "bags": "Golf Bag", "balls": "Golf Balls",
+    "attire": "Apparel", "shoes": "Golf Shoes", "other": "Equipment",
+}
+
+
+def _prepare_card_data(listing, pricing, year: str, sell_usd) -> dict:
+    """Build template variables for card_preview.html."""
+    brand_str = listing.brand if listing.brand and listing.brand != "Unknown" else ""
+    title_raw = (listing.title or "").strip()
+
+    # Strip leading brand from title to avoid "CALLAWAY Callaway Rogue"
+    t = title_raw
+    if brand_str and t.lower().startswith(brand_str.lower()):
+        t = t[len(brand_str):].strip(" -—")
+    words = t.split() or ["Golf", "Club"]
+
+    title_line1 = brand_str.upper() if brand_str else (words[0].upper() if words else "GOLF")
+    title_line2 = " ".join(words[:3]).upper() if brand_str else " ".join(words[1:4]).upper()
+    if not title_line2:
+        title_line2 = _CAT_LABELS.get(listing.category or "", "GOLF").upper()
+
+    cond_clean = (listing.condition or "").replace("_", " ").title()
+    cat_label  = _CAT_LABELS.get(listing.category or "", "Equipment")
+
+    # Specs pills: up to 5
+    specs = []
+    if cond_clean:
+        specs.append({"label": "Condition", "value": cond_clean})
+    specs.append({"label": "Type", "value": cat_label})
+    if year:
+        specs.append({"label": "Year", "value": year})
+    if listing.location:
+        city = listing.location.split(",")[0].strip()[:16]
+        if city:
+            specs.append({"label": "Location", "value": city})
+    specs.append({"label": "Source", "value": listing.platform.title()})
+
+    # Subtitle from description
+    desc    = listing.description or ""
+    sub_words = desc.split()[:14]
+    subtitle  = " ".join(sub_words)
+    if len(desc.split()) > 14:
+        subtitle += "…"
+
+    hook = random.choice(HOOKS.get(listing.category or "other", HOOKS["other"]))
+    wa_msg = generate_wa_message(listing, sell_usd, year)
+    offer_msg = (
+        f"Hi Kanda Sports! I'm interested in the {title_raw}"
+        + (f" (R{int(listing.price_zar):,})" if listing.price_zar else "")
+        + ". What's your best price?"
+    )
+
+    return {
+        "title":                 title_raw,
+        "brand":                 brand_str,
+        "title_line1":           title_line1,
+        "title_line2":           title_line2,
+        "condition":             cond_clean,
+        "category":              listing.category or "other",
+        "description":           desc,
+        "subtitle":              subtitle,
+        "specs":                 specs[:5],
+        "price_zar":             listing.price_zar,
+        "sell_usd":              sell_usd,
+        "year":                  year,
+        "location":              listing.location or "",
+        "platform":              listing.platform,
+        "hook":                  hook,
+        "image_urls":            [],   # filled by caller
+        "wa_message_encoded":    urlquote(wa_msg),
+        "offer_message_encoded": urlquote(offer_msg),
+        "is_hot_deal":           listing.is_hot_deal,
+    }
+
+
+def _playwright_screenshot(html: str) -> bytes | None:
+    """Render card_preview HTML with headless Chromium and return PNG bytes."""
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
+                      "--disable-setuid-sandbox", "--single-process"],
+            )
+            page = browser.new_page(viewport={"width": 460, "height": 900})
+            page.set_content(html, wait_until="networkidle", timeout=20000)
+            page.wait_for_timeout(900)   # let CSS animations settle
+            card = page.query_selector(".card")
+            png  = card.screenshot(type="png") if card else page.screenshot(full_page=True, type="png")
+            browser.close()
+        return png
+    except Exception:
+        return None
 
 
 # ── Pricing ───────────────────────────────────────────────────────────────────
@@ -494,6 +590,26 @@ def posted():
         db.close()
 
 
+@app.route("/card-preview/<int:listing_id>")
+def card_preview(listing_id):
+    """Luxury HTML card — viewable in browser, used as Playwright screenshot source."""
+    year          = request.args.get("year", "")
+    sell_override = request.args.get("sell_usd", None, type=float)
+    db: Session   = SessionFactory()
+    try:
+        listing = db.get(Listing, listing_id)
+        if not listing:
+            return "Not found", 404
+        cfg     = get_config(db)
+        pricing = calculate_price(listing, cfg)
+        sell    = sell_override if sell_override is not None else (pricing["sell_usd"] if pricing else None)
+        data    = _prepare_card_data(listing, pricing, year, sell)
+        data["image_urls"] = extract_listing_images(listing.url, listing.image_url)
+        return render_template("card_preview.html", **data)
+    finally:
+        db.close()
+
+
 @app.route("/api/card/<int:listing_id>")
 def deal_card(listing_id):
     year          = request.args.get("year", "")
@@ -506,25 +622,37 @@ def deal_card(listing_id):
         cfg     = get_config(db)
         pricing = calculate_price(listing, cfg)
         sell    = sell_override if sell_override is not None else (pricing["sell_usd"] if pricing else None)
-        cat     = listing.category or "other"
-        hook    = random.choice(HOOKS.get(cat, HOOKS["other"]))
-        imgs    = extract_listing_images(listing.url, listing.image_url)
-        png     = generate_card(
-            title       = listing.title,
-            brand       = listing.brand,
-            condition   = listing.condition,
-            sell_usd    = sell,
-            year        = year,
-            description = listing.description,
-            hook        = hook,
-            image_urls  = imgs,
-        )
+
+        imgs = extract_listing_images(listing.url, listing.image_url)
+        data = _prepare_card_data(listing, pricing, year, sell)
+        data["image_urls"] = imgs
+
+        # Try luxury Playwright card first, fall back to PIL
+        png = None
+        try:
+            html = render_template("card_preview.html", **data)
+            png  = _playwright_screenshot(html)
+        except Exception:
+            pass
+
+        if not png:
+            cat  = listing.category or "other"
+            hook = random.choice(HOOKS.get(cat, HOOKS["other"]))
+            png  = generate_card(
+                title       = listing.title,
+                brand       = listing.brand,
+                condition   = listing.condition,
+                sell_usd    = sell,
+                year        = year,
+                description = listing.description,
+                hook        = hook,
+                image_urls  = imgs,
+            )
+
         safe = re.sub(r'[^\w-]', '_', (listing.title or 'deal')[:30]).strip('_')
         from flask import Response
         return Response(png, mimetype='image/png',
                         headers={"Content-Disposition": f'attachment; filename="{safe}.png"'})
-    finally:
-        db.close()
 
 
 @app.route("/api/image-urls/<int:listing_id>")

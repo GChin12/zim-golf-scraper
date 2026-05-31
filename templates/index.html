@@ -452,7 +452,14 @@ async function openWA(id) {
     <div style="display:flex;gap:8px;margin-bottom:6px">
       <button class="btn-share-wa" onclick="shareToWA(${id}, waMessage)">&#128279; Open WhatsApp</button>
     </div>
-    <button class="btn-dl-card" onclick="downloadCard(${id})">&#127756; Download deal card (PNG · all photos)</button>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="btn-dl-card" onclick="downloadCard(${id})" style="flex:1">&#127756; Download card (PNG)</button>
+      <a href="/card-preview/${id}" target="_blank" rel="noopener"
+         id="btn-preview-card"
+         style="flex:0 0 auto;background:rgba(201,168,76,0.1);color:#C9A84C;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;font-size:0.82rem;text-decoration:none;display:flex;align-items:center;white-space:nowrap;font-weight:600">
+        &#128065; Preview
+      </a>
+    </div>
     <button class="btn-mark-posted ${posted ? 'done' : ''}" id="btn-mark-posted" onclick="markPosted(${id})">
       ${posted ? '&#10003; Already posted to WA' : 'Mark as posted to WA'}
     </button>
@@ -504,7 +511,11 @@ async function fetchYear(id) {
     spinner.style.display = 'none';
     input.style.display   = '';
     input.value = data.year || '';
-    if (data.year) onYearChange(data.year);
+    if (data.year) {
+      onYearChange(data.year);
+      const prev = document.getElementById('btn-preview-card');
+      if (prev) prev.href = prev.href.split('?')[0] + '?year=' + encodeURIComponent(data.year);
+    }
   } catch (_) {
     const s = document.getElementById('year-spinner');
     if (s) s.textContent = '—';

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>{{ brand }} {{ title_line2 }} — Kanda Sports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0A0A0B;
+  --surface:   #111113;
+  --surface2:  #1A1A1D;
+  --gold:      #C9A84C;
+  --gold-lt:   #E8C97A;
+  --text:      #F0EDE8;
+  --muted:     #7A7870;
+  --border:    rgba(201,168,76,0.2);
+  --green:     #1D9E75;
+  --green-dim: rgba(29,158,117,0.15);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #050506;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 28px 16px 48px;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── CARD ─────────────────────────────────────────────────────────────────── */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HERO ─────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  background: var(--surface2);
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.85) contrast(1.1);
+  transform: scale(1);
+  transition: transform 0.6s ease, opacity 0.18s ease;
+  animation: imgReveal 0.8s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+  display: block;
+}
+
+.hero:hover .hero-img { transform: scale(1.04); }
+
+@keyframes imgReveal {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, var(--surface) 100%);
+  pointer-events: none;
+}
+
+.hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+}
+
+/* Glass pills */
+.glass {
+  background: rgba(0,0,0,0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 20px;
+}
+
+.badge-status {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px 5px 8px;
+  font-size: 11px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+.img-counter {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  padding: 4px 11px;
+  font-size: 11px;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ── THUMBNAIL STRIP ──────────────────────────────────────────────────────── */
+.thumb-strip {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.thumb-strip::-webkit-scrollbar { display: none; }
+
+.thumb {
+  flex: 0 0 auto;
+  width: 68px;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.5;
+  border: 2px solid transparent;
+  transition: opacity 0.2s, border-color 0.2s, transform 0.15s;
+  background: none;
+  padding: 0;
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75);
+  transition: filter 0.2s;
+  display: block;
+}
+.thumb.active        { opacity: 1; border-color: var(--gold); }
+.thumb.active img    { filter: brightness(1); }
+.thumb:hover         { opacity: 0.82; transform: scale(1.04); }
+.thumb:hover img     { filter: brightness(0.95); }
+
+/* ── BODY ─────────────────────────────────────────────────────────────────── */
+.body { padding: 20px 20px 16px; }
+
+.fade-up { animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* a. Brand row */
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.brand-pill {
+  background: var(--green-dim);
+  border: 1px solid rgba(29,158,117,0.3);
+  color: #4DCCA5;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 4px 11px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.brand-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--gold), transparent);
+  opacity: 0.45;
+}
+
+/* b. Title */
+.title-block { margin-bottom: 8px; }
+
+.title-1, .title-2 {
+  font-family: 'Bebas Neue', 'Arial Black', sans-serif;
+  font-size: 44px;
+  line-height: 0.92;
+  display: block;
+  letter-spacing: 0.01em;
+}
+.title-1 { color: var(--text); }
+.title-2 { color: var(--gold-lt); }
+
+/* c. Subtitle */
+.subtitle {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* d. Specs pills */
+.specs-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.spec-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.spec-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  font-weight: 500;
+}
+.spec-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* e. Divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(201,168,76,0.5), transparent);
+  margin-bottom: 18px;
+}
+
+/* f. Price row */
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 22px;
+  gap: 12px;
+}
+.price-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+.price-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--gold-lt);
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+}
+.price-sup {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  color: var(--gold);
+  margin-top: 5px;
+  font-style: normal;
+}
+.savings-box {
+  background: rgba(201,168,76,0.07);
+  border: 1px solid rgba(201,168,76,0.28);
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.savings-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.savings-amt {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--gold-lt);
+  letter-spacing: 0.02em;
+}
+.savings-sub {
+  font-size: 10px;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* g. CTAs */
+.cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s, border-color 0.18s;
+  border: none;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: #0A0A0B;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(201,168,76,0.38);
+  background: var(--gold-lt);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(240,237,232,0.18);
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(240,237,232,0.35);
+}
+
+/* h. Urgency */
+.urgency {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+.urgency-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e85252;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.footer-brand {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  font-weight: 400;
+}
+.footer-brand b { color: var(--gold); font-weight: 700; }
+
+.verified {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.verified svg { color: #4DCCA5; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<article class="card">
+
+  <!-- ── 1. HERO ─────────────────────────────────────────────────────────── -->
+  <div class="hero">
+    {% if image_urls %}
+    <img class="hero-img" id="hero-img"
+         src="{{ image_urls[0] }}"
+         alt="{{ title }}"
+         onerror="this.style.display='none';document.getElementById('hero-ph').style.display='flex'">
+    {% endif %}
+    <div class="hero-placeholder" id="hero-ph" style="display:{{ 'none' if image_urls else 'flex' }}">
+      <svg width="72" height="72" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" opacity="0.25">
+        <rect width="400" height="400" rx="80" fill="#C9A84C"/>
+        <rect x="20" y="20" width="360" height="360" rx="60" fill="#0A0A0B"/>
+        <line x1="110" y1="90" x2="110" y2="310" stroke="#E8C97A" stroke-width="40" stroke-linecap="round"/>
+        <line x1="110" y1="200" x2="290" y2="90"  stroke="#E8C97A" stroke-width="40" stroke-linecap="round"/>
+        <line x1="110" y1="200" x2="290" y2="310" stroke="#E8C97A" stroke-width="40" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="badge-status glass">
+      <span class="pulse-dot"></span>
+      Second Hand{% if condition %} · {{ condition }}{% endif %}
+    </div>
+    {% if image_urls %}
+    <div class="img-counter glass" id="img-counter">1 / {{ image_urls|length }}</div>
+    {% endif %}
+  </div>
+
+  <!-- ── 2. THUMBNAIL STRIP ──────────────────────────────────────────────── -->
+  {% if image_urls|length > 1 %}
+  <div class="thumb-strip">
+    {% for url in image_urls %}
+    <button class="thumb{{ ' active' if loop.first else '' }}"
+            onclick="selectThumb(this,'{{ url }}',{{ loop.index }})"
+            type="button"
+            title="Photo {{ loop.index }}">
+      <img src="{{ url }}" alt="Photo {{ loop.index }}" loading="lazy"
+           onerror="this.closest('.thumb').style.display='none'">
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── 3. BODY ─────────────────────────────────────────────────────────── -->
+  <div class="body">
+
+    <!-- a. Brand row -->
+    <div class="brand-row fade-up" style="animation-delay:.2s">
+      <div class="brand-pill">{{ brand or 'Golf' }}</div>
+      <div class="brand-line"></div>
+    </div>
+
+    <!-- b. Title -->
+    <div class="title-block fade-up" style="animation-delay:.3s">
+      <span class="title-1">{{ title_line1 }}</span>
+      <span class="title-2">{{ title_line2 }}</span>
+    </div>
+
+    <!-- c. Subtitle -->
+    {% if subtitle %}
+    <p class="subtitle fade-up" style="animation-delay:.35s">{{ subtitle }}</p>
+    {% endif %}
+
+    <!-- d. Specs pills -->
+    {% if specs %}
+    <div class="specs-row fade-up" style="animation-delay:.4s">
+      {% for s in specs %}
+      <div class="spec-pill">
+        <span class="spec-label">{{ s.label }}</span>
+        <span class="spec-val">{{ s.value }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- e. Divider -->
+    <div class="divider fade-up" style="animation-delay:.45s"></div>
+
+    <!-- f. Price row -->
+    <div class="price-row fade-up" style="animation-delay:.45s">
+      <div>
+        <p class="price-label">Asking price</p>
+        <div class="price-amount">
+          <sup class="price-sup">R</sup>
+          <span>{{ "{:,.0f}".format(price_zar) if price_zar else "—" }}</span>
+        </div>
+      </div>
+      {% if sell_usd %}
+      <div class="savings-box">
+        <p class="savings-label">Sell price</p>
+        <p class="savings-amt">${{ "{:,.0f}".format(sell_usd) }}</p>
+        <p class="savings-sub">Save ~65% vs New</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- g. CTAs -->
+    <div class="cta-stack fade-up" style="animation-delay:.5s">
+      <a class="btn btn-primary"
+         href="https://wa.me/27786093328?text={{ wa_message_encoded }}"
+         target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+        </svg>
+        Enquire on WhatsApp
+      </a>
+      <a class="btn btn-secondary"
+         href="https://wa.me/27786093328?text={{ offer_message_encoded }}"
+         target="_blank" rel="noopener">
+        Make an Offer
+      </a>
+    </div>
+
+    <!-- h. Urgency -->
+    <p class="urgency fade-up" style="animation-delay:.5s">
+      <span class="urgency-dot"></span>
+      Listed today &middot; First come, first served
+    </p>
+
+  </div><!-- /body -->
+
+  <!-- ── 4. FOOTER ────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <p class="footer-brand">Sold by <b>KANDA SPORTS</b></p>
+    <div class="verified">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+      Verified Seller
+    </div>
+  </footer>
+
+</article>
+
+<script>
+  const heroImg   = document.getElementById('hero-img');
+  const counter   = document.getElementById('img-counter');
+  const totalImgs = {{ image_urls|length if image_urls else 0 }};
+
+  function selectThumb(el, url, index) {
+    document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    if (!heroImg) return;
+    heroImg.style.opacity = '0';
+    setTimeout(function() {
+      heroImg.src = url;
+      heroImg.onload = function() { heroImg.style.opacity = '1'; };
+      if (heroImg.complete) heroImg.style.opacity = '1';
+    }, 180);
+    if (counter) counter.textContent = index + ' / ' + totalImgs;
+  }
+</script>
+</body>
+</html>
